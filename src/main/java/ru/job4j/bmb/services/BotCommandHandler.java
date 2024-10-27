@@ -7,12 +7,12 @@ import ru.job4j.bmb.content.Content;
 import ru.job4j.bmb.model.User;
 import ru.job4j.bmb.repository.UserRepository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
  * Класс будет обрабатывать меню бота.
+ *
  * @author Olga Ilyina
  * @version 1.0
  */
@@ -32,26 +32,22 @@ public class BotCommandHandler {
 
     /**
      * Обработка команд
-     * @param message
-     * @return
+     *
+     * @param message Полученное сообщение из телеграм чата
+     * @return Возвращает подходящий контент
      */
     Optional<Content> commands(Message message) {
         switch (message.getText()) {
-            case  ("/start"):
+            case ("/start"):
                 return handleStartCommand(message.getChatId(), message.getContact().getUserId());
-                break;
             case ("/week_mood_log"):
                 return moodService.weekMoodLogCommand(message.getChatId(), message.getContact().getUserId());
-                break;
             case ("/month_mood_log"):
                 return moodService.monthMoodLogCommand(message.getChatId(), message.getContact().getUserId());
-                break;
             case ("/award"):
                 return moodService.awards(message.getChatId(), message.getContact().getUserId());
-                break;
             default:
                 return Optional.empty();
-                break;
         }
     }
 
