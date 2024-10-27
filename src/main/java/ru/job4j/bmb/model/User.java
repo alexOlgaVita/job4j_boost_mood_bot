@@ -12,6 +12,10 @@ public class User {
     private long clientId;
     private long chatId;
 
+    public User() {
+        super();
+    }
+
     public User(Long id, long clientId, long chatId) {
         this.id = id;
         this.clientId = clientId;
