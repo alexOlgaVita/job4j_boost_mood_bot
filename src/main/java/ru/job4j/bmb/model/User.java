@@ -21,8 +21,7 @@ public class User {
         super();
     }
 
-    public User(Long id, long clientId, long chatId) {
-        this.id = id;
+    public User(long clientId, long chatId) {
         this.clientId = clientId;
         this.chatId = chatId;
     }
