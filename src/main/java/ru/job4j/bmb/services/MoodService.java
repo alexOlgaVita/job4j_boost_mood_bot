@@ -56,7 +56,7 @@ public class MoodService {
 
     public Optional<Content> monthMoodLogCommand(long chatId, Long clientId) {
         var content = new Content(chatId);
-        content.setText(formatMoodLogs(periodMoodLogCommand(chatId, clientId, 30 * 7 * 24 * 60 * 60), "Отчет по настроению за последний месяц"));
+        content.setText(formatMoodLogs(periodMoodLogCommand(chatId, clientId, 30 * 24 * 60 * 60), "Отчет по настроению за последний месяц"));
         return Optional.of(content);
     }
 
