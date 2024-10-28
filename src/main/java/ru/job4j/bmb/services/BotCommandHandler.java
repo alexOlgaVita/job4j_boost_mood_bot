@@ -37,18 +37,15 @@ public class BotCommandHandler {
      * @return Возвращает подходящий контент
      */
     Optional<Content> commands(Message message) {
-        switch (message.getText()) {
-            case ("/start"):
-                return handleStartCommand(message.getChatId(), message.getContact().getUserId());
-            case ("/week_mood_log"):
-                return moodService.weekMoodLogCommand(message.getChatId(), message.getContact().getUserId());
-            case ("/month_mood_log"):
-                return moodService.monthMoodLogCommand(message.getChatId(), message.getContact().getUserId());
-            case ("/award"):
-                return moodService.awards(message.getChatId(), message.getContact().getUserId());
-            default:
-                return Optional.empty();
-        }
+        return switch (message.getText()) {
+            case ("/start") -> handleStartCommand(message.getChatId(), message.getContact().getUserId());
+            case ("/week_mood_log") ->
+                    moodService.weekMoodLogCommand(message.getChatId(), message.getContact().getUserId());
+            case ("/month_mood_log") ->
+                    moodService.monthMoodLogCommand(message.getChatId(), message.getContact().getUserId());
+            case ("/award") -> moodService.awards(message.getChatId(), message.getContact().getUserId());
+            default -> Optional.empty();
+        };
     }
 
     Optional<Content> handleCallback(CallbackQuery callback) {
