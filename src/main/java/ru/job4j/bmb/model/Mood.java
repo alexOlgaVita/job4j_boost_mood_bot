@@ -15,6 +15,10 @@ public class Mood {
 
     private boolean good;
 
+    public Mood() {
+        super();
+    }
+
     public Mood(String text, boolean good) {
         this.text = text;
         this.good = good;

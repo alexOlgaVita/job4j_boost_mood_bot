@@ -9,8 +9,4 @@ import java.util.List;
 @Repository
 public interface MoodRepository extends CrudRepository<Mood, Long> {
     List<Mood> findAll();
-
-    Mood findByMoodId(Long moodId);
-
-    void add(Mood mood);
 }

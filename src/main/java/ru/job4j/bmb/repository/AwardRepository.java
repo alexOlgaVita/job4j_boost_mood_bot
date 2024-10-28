@@ -9,8 +9,4 @@ import java.util.List;
 @Repository
 public interface AwardRepository extends CrudRepository<Award, Long> {
     List<Award> findAll();
-
-    Award findByAwardId(Long awardId);
-
-    void add(Award award);
 }
