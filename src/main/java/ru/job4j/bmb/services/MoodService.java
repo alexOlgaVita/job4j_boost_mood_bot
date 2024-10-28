@@ -1,14 +1,13 @@
 package ru.job4j.bmb.services;
 
 import org.springframework.stereotype.Service;
+import ru.job4j.bmb.content.Content;
 import ru.job4j.bmb.model.*;
 import ru.job4j.bmb.repository.*;
-import ru.job4j.bmb.content.Content;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -83,17 +82,29 @@ public class MoodService {
 
     public Optional<Content> awards(long chatId, Long clientId) {
         var content = new Content(chatId);
+
         User user = userRepository.findAll().stream()
                 .filter(value -> Objects.equals(value.getClientId(), clientId) && Objects.equals(value.getChatId(), chatId))
                 .findFirst().orElse(null);
-        long days = (moodLogRepository.findAll().stream()
-                .filter(value -> value.getUser().equals(user))
-                .min(Comparator.comparing(MoodLog::getCreatedAt)).get().getCreatedAt() - (Instant.now().getEpochSecond())) / (60  * 60 * 24);
-        Award award = awardRepository.findAll().stream()
-                .filter(value -> value.getDays() <= days)
-                .max(Comparator.comparing(Award::getDays))
-                .orElse(null);
-        achievementRepository.save(new Achievement(Instant.now().getEpochSecond(), user, award));
+        List<Achievement> achievements = achievementRepository.findAll().stream()
+                .filter(value -> value.getUser().equals(user)
+                        && (value.getCreateAt() <= Instant.now().getEpochSecond()
+                        && (value.getCreateAt() >= Instant.now().getEpochSecond() - 30 * 24 * 60 * 60)))
+                .toList();
+        List<Award> awards = awardRepository.findAll().stream()
+                .filter(achievements::contains).toList();
+        content.setText(formatAwards(awards, "Ваши достижения за месяц"));
         return Optional.of(content);
+    }
+
+    private String formatAwards(List<Award> awards, String title) {
+        if (awards.isEmpty()) {
+            return title + ":\nNo awards found.";
+        }
+        var sb = new StringBuilder(title + ":\n");
+        awards.forEach(award -> {
+            sb.append(award.getDays()).append("дней: ").append(award.getDescription()).append("\n");
+        });
+        return sb.toString();
     }
 }

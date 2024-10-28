@@ -7,6 +7,7 @@ import ru.job4j.bmb.content.Content;
 import ru.job4j.bmb.model.User;
 import ru.job4j.bmb.repository.UserRepository;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -38,20 +39,22 @@ public class BotCommandHandler {
      */
     Optional<Content> commands(Message message) {
         return switch (message.getText()) {
-            case ("/start") -> handleStartCommand(message.getChatId(), message.getContact().getUserId());
+            case ("/start") -> handleStartCommand(message.getChatId(), message.getFrom().getId());
             case ("/week_mood_log") ->
-                    moodService.weekMoodLogCommand(message.getChatId(), message.getContact().getUserId());
+                    moodService.weekMoodLogCommand(message.getChatId(), message.getFrom().getId());
             case ("/month_mood_log") ->
-                    moodService.monthMoodLogCommand(message.getChatId(), message.getContact().getUserId());
-            case ("/award") -> moodService.awards(message.getChatId(), message.getContact().getUserId());
+                    moodService.monthMoodLogCommand(message.getChatId(), message.getFrom().getId());
+            case ("/award") -> moodService.awards(message.getChatId(), message.getFrom().getId());
             default -> Optional.empty();
         };
     }
 
     Optional<Content> handleCallback(CallbackQuery callback) {
         var moodId = Long.valueOf(callback.getData());
-        var user = userRepository.findById(callback.getFrom().getId());
-        return Stream.of(user).map(value -> moodService.chooseMood(value.orElse(new User()), moodId)).findFirst();
+        User user = userRepository.findAll().stream()
+                .filter(value -> Objects.equals(value.getClientId(), callback.getFrom().getId()) && Objects.equals(value.getChatId(), callback.getMessage().getChatId()))
+                .findFirst().orElse(null);
+        return Stream.of(user).map(value -> moodService.chooseMood(value, moodId)).findFirst();
     }
 
     private Optional<Content> handleStartCommand(long chatId, Long clientId) {
@@ -59,7 +62,7 @@ public class BotCommandHandler {
         user.setClientId(clientId);
         user.setChatId(chatId);
         userRepository.save(user);
-        var content = new Content(user.getChatId());
+        var content = new Content(chatId);
         content.setText("Как настроение?");
         content.setMarkup(tgUI.buildButtons());
         return Optional.of(content);

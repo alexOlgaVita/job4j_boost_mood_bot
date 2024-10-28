@@ -17,6 +17,10 @@ public class Award {
 
     private int days;
 
+    public Award() {
+        super();
+    }
+
     public Award(String title, String description, int days) {
         this.title = title;
         this.description = description;
