@@ -1,18 +1,14 @@
 package ru.job4j.bmb.services;
 
 import org.springframework.stereotype.Service;
-import ru.job4j.bmb.model.Mood;
-import ru.job4j.bmb.repository.AchievementRepository;
+import ru.job4j.bmb.model.*;
+import ru.job4j.bmb.repository.*;
 import ru.job4j.bmb.content.Content;
-import ru.job4j.bmb.model.MoodLog;
-import ru.job4j.bmb.model.User;
-import ru.job4j.bmb.repository.MoodLogRepository;
-import ru.job4j.bmb.repository.MoodRepository;
-import ru.job4j.bmb.repository.UserRepository;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,6 +20,8 @@ public class MoodService {
     private final RecommendationEngine recommendationEngine;
     private final UserRepository userRepository;
     private final AchievementRepository achievementRepository;
+    private final AwardRepository awardRepository;
+
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
@@ -32,12 +30,14 @@ public class MoodService {
                        RecommendationEngine recommendationEngine,
                        UserRepository userRepository,
                        AchievementRepository achievementRepository,
-                       MoodRepository moodrepository) {
+                       MoodRepository moodrepository,
+                       AwardRepository awardRepository) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
         this.achievementRepository = achievementRepository;
         this.moodrepository = moodrepository;
+        this.awardRepository = awardRepository;
     }
 
     public Content chooseMood(User user, Long moodId) {
@@ -83,6 +83,17 @@ public class MoodService {
 
     public Optional<Content> awards(long chatId, Long clientId) {
         var content = new Content(chatId);
+        User user = userRepository.findAll().stream()
+                .filter(value -> Objects.equals(value.getClientId(), clientId) && Objects.equals(value.getChatId(), chatId))
+                .findFirst().orElse(null);
+        long days = (moodLogRepository.findAll().stream()
+                .filter(value -> value.getUser().equals(user))
+                .min(Comparator.comparing(MoodLog::getCreatedAt)).get().getCreatedAt() - (Instant.now().getEpochSecond())) / (60  * 60 * 24);
+        Award award = awardRepository.findAll().stream()
+                .filter(value -> value.getDays() <= days)
+                .max(Comparator.comparing(Award::getDays))
+                .orElse(null);
+        achievementRepository.save(new Achievement(Instant.now().getEpochSecond(), user, award));
         return Optional.of(content);
     }
 }
