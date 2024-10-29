@@ -10,7 +10,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.job4j.bmb.content.Content;
 import ru.job4j.bmb.exception.SentContentException;
-import ru.job4j.bmb.repository.UserRepository;
 
 /**
  * Класс описывает интеграцию с Telegram API. Является входной точкой в приложение.
@@ -23,20 +22,14 @@ public class TelegramBotService extends TelegramLongPollingBot implements SentCo
     private final BotCommandHandler handler;
     private final String botName;
     private final String botToken;
-    private final UserRepository userRepository;
-    private final TgUI tgUI;
 
     public TelegramBotService(@Value("${telegram.bot.name}") String botName,
                               @Value("${telegram.bot.token}") String botToken,
-                              BotCommandHandler handler,
-                              UserRepository userRepository,
-                              TgUI tgUI) {
+                              BotCommandHandler handler) {
         super(botToken);
         this.handler = handler;
         this.botName = botName;
         this.botToken = botToken;
-        this.userRepository = userRepository;
-        this.tgUI = tgUI;
     }
 
     @Override
