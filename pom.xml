@@ -10,6 +10,12 @@
     <packaging>jar</packaging>
     <name>Job4j Boost Mood Bot</name>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -79,6 +85,11 @@
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
             <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.peterarsentev</groupId>
+            <artifactId>SpringFakeTest</artifactId>
+            <version>v.1.0.3</version>
         </dependency>
     </dependencies>
     <build>
