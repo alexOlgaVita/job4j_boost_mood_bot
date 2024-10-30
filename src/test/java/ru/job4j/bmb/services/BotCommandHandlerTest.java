@@ -29,10 +29,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(classes = {BotCommandHandler.class, UserFakeRepository.class,
         MoodFakeRepository.class, MoodLogFakeRepository.class})
 class BotCommandHandlerTest {
-    private final long CHAT_ID = 100L;
-    private final long CLIENT_ID = 1L;
-    private final long MOOD_ID = 10L;
-    private final long USER_ID = 1L;
+    private static final long CHAT_ID = 100L;
+    private static final long CLIENT_ID = 1L;
+    private static final long MOOD_ID = 10L;
+    private static final long USER_ID = 1L;
 
     @Autowired
     @Qualifier("userFakeRepository")
