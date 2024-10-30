@@ -7,9 +7,7 @@ import ru.job4j.bmb.content.Content;
 import ru.job4j.bmb.model.User;
 import ru.job4j.bmb.repository.UserRepository;
 
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * Класс будет обрабатывать меню бота.
@@ -40,10 +38,8 @@ public class BotCommandHandler {
     Optional<Content> commands(Message message) {
         return switch (message.getText()) {
             case ("/start") -> handleStartCommand(message.getChatId(), message.getFrom().getId());
-            case ("/week_mood_log") ->
-                    moodService.weekMoodLogCommand(message.getChatId(), message.getFrom().getId());
-            case ("/month_mood_log") ->
-                    moodService.monthMoodLogCommand(message.getChatId(), message.getFrom().getId());
+            case ("/week_mood_log") -> moodService.weekMoodLogCommand(message.getChatId(), message.getFrom().getId());
+            case ("/month_mood_log") -> moodService.monthMoodLogCommand(message.getChatId(), message.getFrom().getId());
             case ("/award") -> moodService.awards(message.getChatId(), message.getFrom().getId());
             default -> Optional.empty();
         };
@@ -51,10 +47,8 @@ public class BotCommandHandler {
 
     Optional<Content> handleCallback(CallbackQuery callback) {
         var moodId = Long.valueOf(callback.getData());
-        User user = userRepository.findAll().stream()
-                .filter(value -> Objects.equals(value.getClientId(), callback.getFrom().getId()) && Objects.equals(value.getChatId(), callback.getMessage().getChatId()))
-                .findFirst().orElse(null);
-        return Stream.of(user).map(value -> moodService.chooseMood(value, moodId)).findFirst();
+        var user = userRepository.findByClientId(callback.getFrom().getId());
+        return user.stream().map(value -> moodService.chooseMood(value, moodId)).findFirst();
     }
 
     private Optional<Content> handleStartCommand(long chatId, Long clientId) {

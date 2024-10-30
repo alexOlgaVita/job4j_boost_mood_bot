@@ -3,9 +3,12 @@ package ru.job4j.bmb.content;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
+import java.util.Objects;
+
 /**
  * Класс описывает Базовую модель данных "Контент".
  * Этот объект будет описывать сообщения системы, которые могут содержать текст, аудио, видео.
+ *
  * @author Olga Ilyina
  * @version 1.0
  */
@@ -63,5 +66,28 @@ public class Content {
 
     public InputFile getVideo() {
         return video;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Content content = (Content) o;
+        return (Objects.equals(chatId, content.chatId)
+                && Objects.equals(text, content.text)
+                && Objects.equals(markup, content.markup)
+                && Objects.equals(audio, content.audio)
+                && Objects.equals(photo, content.photo)
+                && Objects.equals(video, content.video)
+        );
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chatId);
     }
 }
