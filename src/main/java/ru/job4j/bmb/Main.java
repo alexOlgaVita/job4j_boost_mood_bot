@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -20,6 +21,7 @@ import ru.job4j.bmb.repository.MoodRepository;
 
 import java.util.ArrayList;
 
+@Configuration
 @EnableAspectJAutoProxy
 @EnableScheduling
 @SpringBootApplication
