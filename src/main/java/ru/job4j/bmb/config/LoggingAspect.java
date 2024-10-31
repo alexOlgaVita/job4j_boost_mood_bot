@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class LoggingAspect {
-    @Pointcut("execution(* job5j.bmb.services.*.*(..))")
+    @Pointcut("execution(* job4j.bmb.services.*.*(..))")
     private void serviceLayer() {
 
     }
