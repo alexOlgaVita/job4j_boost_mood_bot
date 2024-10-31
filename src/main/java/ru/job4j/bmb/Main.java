@@ -12,9 +12,11 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.LongPollingBot;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import ru.job4j.bmb.model.Advice;
 import ru.job4j.bmb.model.Award;
 import ru.job4j.bmb.model.Mood;
 import ru.job4j.bmb.model.MoodContent;
+import ru.job4j.bmb.repository.AdviceRepository;
 import ru.job4j.bmb.repository.AwardRepository;
 import ru.job4j.bmb.repository.MoodContentRepository;
 import ru.job4j.bmb.repository.MoodRepository;
@@ -34,7 +36,8 @@ public class Main {
     @Bean
     public CommandLineRunner loadDatabase(MoodRepository moodRepository,
                                           MoodContentRepository moodContentRepository,
-                                          AwardRepository awardRepository) {
+                                          AwardRepository awardRepository,
+                                          AdviceRepository adviceRepository) {
         return args -> {
             var moods = moodRepository.findAll();
             if (!moods.isEmpty()) {
@@ -42,6 +45,7 @@ public class Main {
             }
             loadMood(moodRepository, moodContentRepository);
             loadAward(awardRepository);
+            loadAdvice(adviceRepository);
         };
     }
 
@@ -137,5 +141,36 @@ public class Main {
                 "За значимые достижения (например, 50 дней хорошего настроения). Награда: Персонализированное сообщение от команды приложения или вдохновляющая цитата.",
                 50));
         awardRepository.saveAll(awards);
+    }
+
+    private void loadAdvice(AdviceRepository adviceRepository) {
+        var data = new ArrayList<Advice>();
+        data.add(new Advice(false, "Постарайтесь плохие мысли заменить на хорошие.",
+                "Верьте, что вы можете, и вы на полпути к цели (Теодор Рузвельт)"));
+        data.add(new Advice(false, "Почаще выбирайтесь на природу",
+                "Спокойный ум приносит внутреннюю силу и уверенность в себе, так что это очень важно для хорошего здоровья (Далай-лама)"));
+        data.add(new Advice(false, "Посмотрие фильм 'Король говорит!'",
+                "Успех не окончателен, поражение не фатально. Лишь смелость продолжать имеет значение. (Уинстон Черчилль)"));
+        data.add(new Advice(false, "Научитись прощать себе свои несовершенства, это человечно.",
+                "Свобода ничего не стоит, если она не включает в себя свободу ошибаться. (Махатма Ганди)"));
+        data.add(new Advice(false, "Сделайте передышку. Сходите в поход.",
+                "В конечном итоге всё будет хорошо. Если пока не хорошо, значит, это еще не конец. (Пауло Коэльо)Неудача — это просто возможность начать снова, но уже более мудро. (Генри Форд)"));
+        data.add(new Advice(false, "Культивируйте позитивные мысли.",
+                "В конечном итоге всё будет хорошо. Если пока не хорошо, значит, это еще не конец. (Пауло Коэльо)"));
+        data.add(new Advice(true, "Культивируйте позитивные мысли.",
+                "Позитивное мышление позволит вам делать все лучше, чем негативное. (Зиг Зиглар)"));
+        data.add(new Advice(true, "Культивируйте позитивные мысли.",
+                "Не стоит недооценивать ценность бездействия, просто идти вперед, слушать все то, чего вы не можете услышать, и не беспокоиться. (Винни-Пух)"));
+        data.add(new Advice(true, "Культивируйте позитивные мысли.",
+                "Пессимизм ведет к слабости, оптимизм - к силе (Уильям Джеймс)"));
+        data.add(new Advice(true, "Продолжайте в том же духе",
+                "Весна - это такая пора, когда даже брюки не могут скрыть твое приподнятое настроение. (Автор неизвестен)"));
+        data.add(new Advice(false, "Почитайте книгу 'Похождения бравого солдата Швейка'",
+                "У парашютиста было упадническое настроение. (Владимир Семенов)"));
+        data.add(new Advice(false, "Не вешайте нос и сходите на 'Уральские пельмени'",
+                "У парашютиста было упадническое настроение.Даже если настроение на букву 'х' - это ещё очень много вариантов. (Игорь Карпов)"));
+        data.add(new Advice(true, "Возьмите в свою компанию друга и прогулйтесь наконец",
+                "Вы так идёте, что идите дальше. (Игорь Карпов)"));
+        adviceRepository.saveAll(data);
     }
 }

@@ -55,10 +55,9 @@ public class AchievementService implements ApplicationListener<UserEvent> {
         }
         sentContent.sent(content);
         for (Achievement achievement : achievements) {
-            content.setText(" :" + achievement.getAward().getDescription()
-                    + ", :" + achievement.getAward().getDescription()
-                    + ", :" + achievement.getAward().getDays()
-                    + "\n");
+            content.setText("-- Количество дней :" + achievement.getAward().getDays() + " --\n"
+                    + "Заголовок: " + achievement.getAward().getTitle() + "\n"
+                    + "Название: " + achievement.getAward().getDescription() + "\n");
             sentContent.sent(content);
         }
     }

@@ -10,9 +10,7 @@ import ru.job4j.bmb.repository.*;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class MoodService {
@@ -23,6 +21,7 @@ public class MoodService {
     private final UserRepository userRepository;
     private final AchievementRepository achievementRepository;
     private final AwardRepository awardRepository;
+    private final AdviceRepository adviceRepository;
 
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
@@ -34,7 +33,8 @@ public class MoodService {
                        AchievementRepository achievementRepository,
                        MoodRepository moodrepository,
                        AwardRepository awardRepository,
-                       ApplicationEventPublisher publisher) {
+                       ApplicationEventPublisher publisher,
+                       AdviceRepository adviceRepository) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
@@ -42,6 +42,7 @@ public class MoodService {
         this.moodrepository = moodrepository;
         this.awardRepository = awardRepository;
         this.publisher = publisher;
+        this.adviceRepository = adviceRepository;
     }
 
     public Content chooseMood(User user, Long moodId) {
@@ -88,18 +89,35 @@ public class MoodService {
 
     public Optional<Content> awards(long chatId, Long clientId) {
         var content = new Content(chatId);
-
         User user = userRepository.findAll().stream()
                 .filter(value -> Objects.equals(value.getClientId(), clientId) && Objects.equals(value.getChatId(), chatId))
                 .findFirst().orElse(null);
-        List<Achievement> achievements = achievementRepository.findAll().stream()
+        List<Award> achievementAwards = achievementRepository.findAll().stream()
                 .filter(value -> value.getUser().equals(user)
                         && (value.getCreateAt() <= Instant.now().getEpochSecond()
                         && (value.getCreateAt() >= Instant.now().getEpochSecond() - 30 * 24 * 60 * 60)))
+                .map(Achievement::getAward)
                 .toList();
         List<Award> awards = awardRepository.findAll().stream()
-                .filter(achievements::contains).toList();
+                .filter(achievementAwards::contains).toList();
         content.setText(formatAwards(awards, "Ваши достижения за месяц"));
+        return Optional.of(content);
+    }
+
+    public Optional<Content> dailyAdvice(long chatId, Long clientId) {
+        Random r = new Random();
+        var content = new Content(chatId);
+        User user = userRepository.findAll().stream()
+                .filter(value -> Objects.equals(value.getClientId(), clientId) && Objects.equals(value.getChatId(), chatId))
+                .findFirst().orElse(null);
+        boolean isGood = moodLogRepository.findAll().stream()
+                .filter(value -> value.getUser().equals(user))
+                .max(Comparator.comparing(MoodLog::getCreatedAt))
+                .get().getMood().isGood();
+        List<Advice> advices = adviceRepository.findAll().stream()
+                .filter(value -> value.isGood() == isGood).toList();
+        Advice advice = advices.get(r.nextInt(advices.size()));
+        content.setText(formatAdvice(advice, "Совет дня"));
         return Optional.of(content);
     }
 
@@ -109,8 +127,19 @@ public class MoodService {
         }
         var sb = new StringBuilder(title + ":\n");
         awards.forEach(award -> {
-            sb.append(award.getDays()).append("дней: ").append(award.getDescription()).append("\n");
+            sb.append("-- Количество дней: ").append(award.getDays()).append(" --").append("\n")
+                    .append("Заголовок: ").append(award.getTitle()).append("\n")
+                    .append("Описание награды: ").append(award.getDescription()).append("\n");
         });
+        return sb.toString();
+    }
+
+    public static String formatAdvice(Advice advice, String title) {
+        if (advice == null) {
+            return title + ":\nДля начала советуем ответить, какое у Вас сегодня настроение";
+        }
+        var sb = new StringBuilder(title + ":\n");
+        sb.append("Цитата: ").append(advice.getQuote()).append("\nРекомендуем: ").append(advice.getSuggestion()).append("\n");
         return sb.toString();
     }
 }

@@ -41,6 +41,7 @@ public class BotCommandHandler {
             case ("/week_mood_log") -> moodService.weekMoodLogCommand(message.getChatId(), message.getFrom().getId());
             case ("/month_mood_log") -> moodService.monthMoodLogCommand(message.getChatId(), message.getFrom().getId());
             case ("/award") -> moodService.awards(message.getChatId(), message.getFrom().getId());
+            case ("/daily_advice") -> moodService.dailyAdvice(message.getChatId(), message.getFrom().getId());
             default -> Optional.empty();
         };
     }
