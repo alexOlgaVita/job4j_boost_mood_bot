@@ -7,6 +7,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.job4j.bmb.config.OnRealCondition;
@@ -60,9 +61,15 @@ public class TelegramBotService extends TelegramLongPollingBot implements SentCo
     public void sent(Content content) {
         try {
             if (content.getVideo() != null) {
+                var message = new SendVideo();
+                message.setChatId(String.valueOf(content.getChatId()));
+                message.setVideo(content.getVideo());
+                execute(message);
+            }
+            if (content.getAudio() != null) {
                 var message = new SendAudio();
                 message.setChatId(String.valueOf(content.getChatId()));
-                message.setAudio(content.getVideo());
+                message.setAudio(content.getAudio());
                 execute(message);
             }
             if (content.getText() != null && content.getMarkup() != null) {
@@ -81,7 +88,7 @@ public class TelegramBotService extends TelegramLongPollingBot implements SentCo
             if (content.getPhoto() != null) {
                 var message = new SendPhoto();
                 message.setChatId(String.valueOf(content.getChatId()));
-                message.setPhoto(content.getVideo());
+                message.setPhoto(content.getPhoto());
                 execute(message);
             }
         } catch (TelegramApiException e) {
