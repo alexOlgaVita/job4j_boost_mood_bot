@@ -3,33 +3,30 @@ package ru.job4j.bmb.services;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.job4j.bmb.content.Content;
-import ru.job4j.bmb.model.Advice;
 import ru.job4j.bmb.model.MoodLog;
 import ru.job4j.bmb.model.User;
-import ru.job4j.bmb.repository.AdviceRepository;
 import ru.job4j.bmb.repository.MoodLogRepository;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static ru.job4j.bmb.services.MoodService.formatAdvice;
 
 @Service
 public class ReminderService {
     private final SentContent sentContent;
     private final MoodLogRepository moodLogRepository;
     private final TgUI tgUI;
-    private final AdviceRepository adviceRepository;
+    private final ChooseDataService chooseDataService;
 
     public ReminderService(SentContent sentContent,
-                           MoodLogRepository moodLogRepository, TgUI tgUI, AdviceRepository adviceRepository) {
+                           MoodLogRepository moodLogRepository, TgUI tgUI, ChooseDataService chooseDataService) {
         this.sentContent = sentContent;
         this.moodLogRepository = moodLogRepository;
         this.tgUI = tgUI;
-        this.adviceRepository = adviceRepository;
+        this.chooseDataService = chooseDataService;
     }
 
     @Scheduled(fixedRateString = "${recommendation.alert.period}")
@@ -58,17 +55,7 @@ public class ReminderService {
                 .toList();
         Set<User> users = moodLogs.stream().map(MoodLog::getUser).collect(Collectors.toSet());
         for (var user : users) {
-            boolean isGood = moodLogRepository.findAll().stream()
-                    .filter(value -> value.getUser().equals(user))
-                    .max(Comparator.comparing(MoodLog::getCreatedAt))
-                    .get().getMood().isGood();
-            List<Advice> advices = adviceRepository.findAll().stream()
-                    .filter(value -> value.isGood() == isGood).toList();
-            var content = new Content(user.getChatId());
-            Random r = new Random();
-            Advice advice = advices.get(r.nextInt(advices.size()));
-            content.setText(formatAdvice(advice, "Совет дня"));
-            sentContent.sent(content);
+            sentContent.sent(chooseDataService.getAdviceContent(user));
         }
     }
 }

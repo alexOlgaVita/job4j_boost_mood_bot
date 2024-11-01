@@ -8,6 +8,7 @@ import ru.job4j.bmb.model.User;
 import ru.job4j.bmb.repositories.AdviceFakeRepository;
 import ru.job4j.bmb.repositories.MoodFakeRepository;
 import ru.job4j.bmb.repositories.MoodLogFakeRepository;
+import ru.job4j.bmb.repositories.UserFakeRepository;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -41,7 +42,9 @@ class ReminderServiceTest {
         moodLogRepository.save(moodLog);
         var tgUI = new TgUI(moodRepository);
         var adviceRepository = new AdviceFakeRepository();
-        new ReminderService(sentContent, moodLogRepository, tgUI, adviceRepository)
+        var userRepository = new UserFakeRepository();
+        var chooseDataService = new ChooseDataService(userRepository, adviceRepository, moodLogRepository);
+        new ReminderService(sentContent, moodLogRepository, tgUI, chooseDataService)
                 .remindUsers();
         assertThat(result.iterator().next().getMarkup().getKeyboard()
                 .iterator().next().iterator().next().getText()).isEqualTo("Good");
@@ -72,7 +75,9 @@ class ReminderServiceTest {
         moodLogRepository.save(moodLog);
         var tgUI = new TgUI(moodRepository);
         var adviceRepository = new AdviceFakeRepository();
-        new ReminderService(sentContent, moodLogRepository, tgUI, adviceRepository)
+        var userRepository = new UserFakeRepository();
+        var chooseDataService = new ChooseDataService(userRepository, adviceRepository, moodLogRepository);
+        new ReminderService(sentContent, moodLogRepository, tgUI, chooseDataService)
                 .remindUsers();
         assertThat(result.size()).isEqualTo(0);
         assertThat(result).isEmpty();

@@ -5,12 +5,17 @@ import org.springframework.stereotype.Service;
 import ru.job4j.bmb.content.Content;
 import ru.job4j.bmb.event.UserEvent;
 import ru.job4j.bmb.model.*;
-import ru.job4j.bmb.repository.*;
+import ru.job4j.bmb.repository.AchievementRepository;
+import ru.job4j.bmb.repository.AwardRepository;
+import ru.job4j.bmb.repository.MoodLogRepository;
+import ru.job4j.bmb.repository.MoodRepository;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class MoodService {
@@ -18,10 +23,9 @@ public class MoodService {
     private final MoodLogRepository moodLogRepository;
     private final MoodRepository moodrepository;
     private final RecommendationEngine recommendationEngine;
-    private final UserRepository userRepository;
     private final AchievementRepository achievementRepository;
     private final AwardRepository awardRepository;
-    private final AdviceRepository adviceRepository;
+    private final ChooseDataService chooseDataService;
 
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
@@ -29,20 +33,18 @@ public class MoodService {
 
     public MoodService(MoodLogRepository moodLogRepository,
                        RecommendationEngine recommendationEngine,
-                       UserRepository userRepository,
                        AchievementRepository achievementRepository,
                        MoodRepository moodrepository,
                        AwardRepository awardRepository,
                        ApplicationEventPublisher publisher,
-                       AdviceRepository adviceRepository) {
+                       ChooseDataService chooseDataService) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
-        this.userRepository = userRepository;
         this.achievementRepository = achievementRepository;
         this.moodrepository = moodrepository;
         this.awardRepository = awardRepository;
         this.publisher = publisher;
-        this.adviceRepository = adviceRepository;
+        this.chooseDataService = chooseDataService;
     }
 
     public Content chooseMood(User user, Long moodId) {
@@ -79,9 +81,7 @@ public class MoodService {
     }
 
     private List<MoodLog> periodMoodLogCommand(long chatId, Long clientId, long seconds) {
-        User user = userRepository.findAll().stream()
-                .filter(value -> Objects.equals(value.getClientId(), clientId) && Objects.equals(value.getChatId(), chatId))
-                .findFirst().orElse(null);
+        User user = chooseDataService.getUserByChatClientId(chatId, clientId);
         return moodLogRepository.findAll().stream()
                 .filter(value -> value.getUser().equals(user) && (Instant.now().getEpochSecond() - value.getCreatedAt() <= seconds))
                 .toList();
@@ -89,9 +89,7 @@ public class MoodService {
 
     public Optional<Content> awards(long chatId, Long clientId) {
         var content = new Content(chatId);
-        User user = userRepository.findAll().stream()
-                .filter(value -> Objects.equals(value.getClientId(), clientId) && Objects.equals(value.getChatId(), chatId))
-                .findFirst().orElse(null);
+        User user = chooseDataService.getUserByChatClientId(chatId, clientId);
         List<Award> achievementAwards = achievementRepository.findAll().stream()
                 .filter(value -> value.getUser().equals(user)
                         && (value.getCreateAt() <= Instant.now().getEpochSecond()
@@ -105,20 +103,7 @@ public class MoodService {
     }
 
     public Optional<Content> dailyAdvice(long chatId, Long clientId) {
-        Random r = new Random();
-        var content = new Content(chatId);
-        User user = userRepository.findAll().stream()
-                .filter(value -> Objects.equals(value.getClientId(), clientId) && Objects.equals(value.getChatId(), chatId))
-                .findFirst().orElse(null);
-        boolean isGood = moodLogRepository.findAll().stream()
-                .filter(value -> value.getUser().equals(user))
-                .max(Comparator.comparing(MoodLog::getCreatedAt))
-                .get().getMood().isGood();
-        List<Advice> advices = adviceRepository.findAll().stream()
-                .filter(value -> value.isGood() == isGood).toList();
-        Advice advice = advices.get(r.nextInt(advices.size()));
-        content.setText(formatAdvice(advice, "Совет дня"));
-        return Optional.of(content);
+        return Optional.of(chooseDataService.getAdviceContent(chooseDataService.getUserByChatClientId(chatId, clientId)));
     }
 
     private String formatAwards(List<Award> awards, String title) {
@@ -131,15 +116,6 @@ public class MoodService {
                     .append("Заголовок: ").append(award.getTitle()).append("\n")
                     .append("Описание награды: ").append(award.getDescription()).append("\n");
         });
-        return sb.toString();
-    }
-
-    public static String formatAdvice(Advice advice, String title) {
-        if (advice == null) {
-            return title + ":\nДля начала советуем ответить, какое у Вас сегодня настроение";
-        }
-        var sb = new StringBuilder(title + ":\n");
-        sb.append("Цитата: ").append(advice.getQuote()).append("\nРекомендуем: ").append(advice.getSuggestion()).append("\n");
         return sb.toString();
     }
 }
