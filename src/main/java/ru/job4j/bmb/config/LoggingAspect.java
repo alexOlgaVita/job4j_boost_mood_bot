@@ -14,11 +14,11 @@ public class LoggingAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingAspect.class);
 
     @Pointcut("execution(* job4j.bmb.services.*.*(..))")
-    private void serviceLayer() {
+    public void serviceLayer() {
     }
 
     @Before("serviceLayer()")
     public void logBefore(JoinPoint joinPoint) {
-        LOGGER.info("Before execution vethod with name: {}", joinPoint.getSignature().getName());
+        LOGGER.info("Before execution method with name: {}", joinPoint.getSignature().getName());
     }
 }
